@@ -1,0 +1,92 @@
+/* General Header Styles */
+
+
+
+header {
+    width: 100%;
+    background-color: #333;
+    color: white;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 10px 20px;
+    box-sizing: border-box;
+    position: static;
+}
+
+.header-container {
+    width: 100%;
+    max-width: 100%; /* Prevent constraints */
+    margin: 0 auto; /* Center if necessary */
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+header .logo {
+    height: 40px; /* Adjust logo size */
+}
+
+header .header-center {
+    flex-grow: 1;
+    text-align: center;
+}
+
+
+.header-container {
+    width: 100%;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+/* Left: Account Icon */
+
+
+
+
+/* Center: Website Name */
+.header-center h1 {
+    margin: 0;
+    font-size: 24px;
+    text-align: center;
+}
+
+/* Right: Logo */
+.header-right .i {
+    width: 60px; /* Adjust the size of the logo */
+    height: auto;
+    cursor: pointer;
+    color: gold;
+}
+
+img {
+    max-width: 100%; /* Prevent images from exceeding their container */
+    height: auto; /* Maintain aspect ratio */
+   /* Avoid inline spacing issues */
+}
+
+
+#account {
+    color: #4CAF50; /* Green color */
+    font-size: 32px; /* Set the size */
+    transition: transform 0.3s, color 0.3s; /* Add smooth transition for hover effect */
+}
+
+/* Hover effect */
+#account:hover {
+    color: #3e8e41; /* Darker green on hover */
+    transform: scale(1.2); /* Slightly enlarge the icon */
+}
+
+/* Responsive Design for Mobile */
+@media (max-width: 768px) {
+    header {
+        width: 100%; /* Maintain full width */
+    }
+
+    .header-container {
+        flex-direction: column; /* Stack items vertically */
+        text-align: center;
+    }
+}

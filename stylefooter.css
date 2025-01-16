@@ -1,0 +1,39 @@
+.Footercontainer {
+    background-color: #333; /* Dark background */
+    color: white; /* White text */
+    padding: 10px 20px;
+    align-items: center;
+    justify-content: space-between;
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+    grid-column: span 2;
+    border-top: 2px solid black;
+    text-align:center;
+    width: 100%;
+}
+
+a{
+    color: red;
+    text-decoration: none;
+}
+
+.fa-brands {
+    margin: 0 5px;
+    transition: transform 0.3s, color 0.3s;
+    font-size: 30px;
+    color: red;
+}
+
+.facebook i {
+    color: #3b5998;
+    font-size: 24px;
+}
+
+.facebook i:hover {
+    color: #2d4373;
+    transform: scale(1.2);
+}
+
+
+
+
+

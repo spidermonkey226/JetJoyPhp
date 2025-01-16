@@ -1,0 +1,103 @@
+/* General Styles */
+body {
+    font-family: Arial, sans-serif;
+    background-color: #f4f4f9;
+    margin: 0;
+    padding: 0;
+}
+
+/* Table Styling */
+table {
+    width: 90%;
+    margin: 20px auto;
+    border-collapse: collapse;
+    background-color: #ffffff;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+}
+
+table th, table td {
+    border: 1px solid #ddd;
+    text-align: left;
+    padding: 12px;
+}
+
+table th {
+    background-color: #4CAF50;
+    color: white;
+    text-align: center;
+}
+
+table td {
+    vertical-align: middle;
+}
+
+table tr:nth-child(even) {
+    background-color: #f2f2f2;
+}
+
+table tr:hover {
+    background-color: #ddd;
+}
+
+/* Action Column Form Styling */
+table td .action-form {
+    display: flex;
+    flex-wrap: nowrap;
+    align-items: center;
+    gap: 10px;
+}
+
+table td .action-form input[type="text"],
+table td .action-form select {
+    padding: 8px;
+    border: 1px solid #ddd;
+    border-radius: 5px;
+    font-size: 14px;
+    flex: 1;
+    max-width: 200px;
+}
+
+table td .action-form input[type="text"]:focus,
+table td .action-form select:focus {
+    border-color: #4CAF50;
+    outline: none;
+}
+
+table td .action-form button {
+    padding: 8px 12px;
+    background-color: #4CAF50;
+    color: white;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+    font-size: 14px;
+    transition: background-color 0.3s ease;
+}
+
+table td .action-form button:hover {
+    background-color: #45a049;
+}
+
+/* Adjustments for Narrow Screens */
+@media (max-width: 768px) {
+    table, .form-container {
+        width: 100%;
+    }
+
+    table th, table td {
+        font-size: 14px;
+        padding: 8px;
+    }
+
+    table td .action-form {
+        flex-wrap: wrap;
+    }
+
+    table td .action-form input[type="text"],
+    table td .action-form select,
+    table td .action-form button {
+        flex: none;
+        width: 100%;
+        margin-bottom: 5px;
+    }
+}
