@@ -26,7 +26,10 @@
             </div>
         </div>
     </about>
+    <?php include 'footer.php';?>
 </body>
+
+
 
 
 

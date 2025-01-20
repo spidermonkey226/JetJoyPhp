@@ -5,7 +5,10 @@ body {
     margin: 0;
     padding: 0;
 }
+.product{
+    margin-bottom: 150px;
 
+}
 /* Product List Styling */
 .product-list {
     display: flex;
@@ -14,6 +17,7 @@ body {
     gap: 20px;
     padding: 20px;
     background-color: #f8f9fa;
+    
 }
 
 .product-item {
@@ -24,6 +28,7 @@ body {
     width: 300px;
     box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
     transition: transform 0.3s, box-shadow 0.3s;
+    
 }
 
 .product-item:hover {
@@ -97,6 +102,7 @@ body {
     background-color: #ffffff;
     border-radius: 8px;
     box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+    
 }
 
 .form-container.addflight h1 {

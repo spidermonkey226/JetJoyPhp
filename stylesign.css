@@ -6,8 +6,13 @@
     box-sizing: border-box;
     font-family: 'Montserrat', sans-serif;
 }
+body, html {
+    margin: 0;
+    padding: 0;
+    width: 100%;
+}
 
-body {
+body{
     
     background-image: url('dubai.jpg');
     background-size: cover;
@@ -224,4 +229,7 @@ body {
 
 .container.active .toggle-right {
     transform: translateX(200%);
+}
+.footer{
+    width: 100%;
 }
