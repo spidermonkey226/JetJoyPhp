@@ -1,6 +1,12 @@
-<?php include 'header.php'; ?>
-<?php include 'navbar.php'; ?>
-<?php $ticketType=""?>
+<?php
+if (session_status() === PHP_SESSION_NONE) {
+    session_start();
+}
+ include 'header.php'; ?>
+<?php include 'navbar.php'; 
+
+
+$ticketType = ""; ?>
 <div class="page-container">
     <div class="content-wrap">
         <div class="search-section">
@@ -8,13 +14,13 @@
             <h2>Search Flights</h2>
             <form action="" method="GET" id="flight-search-form">
                 <label for="departure">Departure Destination:</label>
-                <input type="text" id="departure" name="departure" placeholder="Enter departure location" required>
+                <input type="text" id="departure" name="departure" placeholder="Enter departure location">
                 
                 <label for="landing">Landing Destination:</label>
-                <input type="text" id="landing" name="landing" placeholder="Enter landing location" required>
+                <input type="text" id="landing" name="landing" placeholder="Enter landing location">
                 
                 <label for="flightdate">Departure Date:</label>
-                <input type="date" id="flightdate" name="flightdate" required>
+                <input type="date" id="flightdate" name="flightdate">
                 
                 <div id="return-date-container" style="display: none;">
                     <label for="returndate">Return Date:</label>
@@ -22,10 +28,10 @@
                 </div>
                 
                 <label for="travelers">Number of Travelers:</label>
-                <input type="number" id="travelers" name="travelers" min="1" value="1" required>
+                <input type="number" id="travelers" name="travelers" min="1" value="1">
                 
                 <label for="ticket-type">Ticket Type:</label>
-                <select id="ticket-type" name="ticket_type" onchange="toggleReturnDate()" required>
+                <select id="ticket-type" name="ticket_type" onchange="toggleReturnDate()">
                     <option value="one-way">One-Way</option>
                     <option value="two-way">Two-Way</option>
                 </select>
@@ -43,19 +49,28 @@
             
             $outboundFlights = [];
             $returnFlights = [];
+            $searchPerformed = false;
 
-            if ($_SERVER["REQUEST_METHOD"] == "GET" && isset($_GET['departure'], $_GET['landing'], $_GET['flightdate'], $_GET['ticket_type'], $_GET['travelers'])) {
-                $departure = mysqli_real_escape_string($conn, $_GET['departure']);
-                $landing = mysqli_real_escape_string($conn, $_GET['landing']);
-                $flightdate = mysqli_real_escape_string($conn, $_GET['flightdate']);
-                $ticketType = mysqli_real_escape_string($conn, $_GET['ticket_type']);
-                $travelers = (int) $_GET['travelers'];
+            if ($_SERVER["REQUEST_METHOD"] == "GET" && (isset($_GET['departure']) || isset($_GET['landing']) || isset($_GET['flightdate']) || isset($_GET['ticket_type']))) {
+                $departure = !empty($_GET['departure']) ? mysqli_real_escape_string($conn, $_GET['departure']) : '';
+                $landing = !empty($_GET['landing']) ? mysqli_real_escape_string($conn, $_GET['landing']) : '';
+                $flightdate = !empty($_GET['flightdate']) ? mysqli_real_escape_string($conn, $_GET['flightdate']) : '';
+                $ticketType = isset($_GET['ticket_type']) ? mysqli_real_escape_string($conn, $_GET['ticket_type']) : '';
+                $travelers = isset($_GET['travelers']) ? (int)$_GET['travelers'] : 1;
+                $searchPerformed = true;
 
-                $outboundQuery = "SELECT * FROM flights 
-                                  WHERE DepartureDes LIKE '%$departure%' 
-                                  AND LandingDes LIKE '%$landing%' 
-                                  AND Flightdate = '$flightdate' 
-                                  AND stock >= $travelers";
+                $outboundQuery = "SELECT * FROM flights WHERE stock >= $travelers";
+                
+                if ($departure) {
+                    $outboundQuery .= " AND DepartureDes LIKE '%$departure%'";
+                }
+                if ($landing) {
+                    $outboundQuery .= " AND LandingDes LIKE '%$landing%'";
+                }
+                if ($flightdate) {
+                    $outboundQuery .= " AND Flightdate = '$flightdate'";
+                }
+
                 $outboundFlights = mysqli_query($conn, $outboundQuery);
 
                 if ($ticketType === "two-way" && isset($_GET['returndate'])) {
@@ -67,6 +82,9 @@
                                     AND stock >= $travelers";
                     $returnFlights = mysqli_query($conn, $returnQuery);
                 }
+            } else {
+                // Default case: Show all flights
+                $outboundFlights = mysqli_query($conn, "SELECT * FROM flights");
             }
 
             if ($outboundFlights && mysqli_num_rows($outboundFlights) > 0): ?>
@@ -81,18 +99,24 @@
                         <p>Landing Time: <?php echo $flight['LandingTime']; ?></p>
                         <p>Price: $<?php echo number_format($flight['price'], 2); ?></p>
                         <p>Available Seats: <?php echo $flight['stock']; ?></p>
-                        
-                        <form action="booking.php" method="GET">
-                            <input type="hidden" name="flight_id" value="<?php echo $flight['fligtId']; ?>">
-                            <input type="hidden" name="number_of_tickets" value="<?php echo $travelers; ?>">
-                            <button type="submit">Book Now</button>
-                        </form>
+                        <?php if (isset($_SESSION['userId'])): ?>
+                            <!-- Show Book Now button if logged in -->
+                            <form action="booking.php" method="GET">
+                                <input type="hidden" name="flight_id" value="<?php echo $flight['fligtId']; ?>">
+                                <input type="hidden" name="number_of_tickets" value="<?php echo $travelers; ?>">
+                                <input type="hidden" name="user_id" value="<?php echo $_SESSION['userId']; ?>">
+                                <button type="submit">Book Now</button>
+                            </form>
+                        <?php else: ?>
+                            <!-- Show Login Required message -->
+                            <p><a href="sign.php" style="color: blue;">Log in</a> to book this flight.</p>
+                        <?php endif; ?>
                     </div>
                 <?php endwhile;
             else: ?>
-                <p>No outbound flights found for your search criteria.</p>
+                <p>No flights found<?php echo $searchPerformed ? " for your search criteria" : ""; ?>.</p>
             <?php endif;
-            
+
             if ($ticketType === "two-way" && $returnFlights && mysqli_num_rows($returnFlights) > 0): ?>
                 <h3>Return Flights</h3>
                 <?php while ($flight = mysqli_fetch_assoc($returnFlights)): ?>
@@ -106,12 +130,18 @@
                         <p>Price: $<?php echo number_format($flight['price'], 2); ?></p>
                         <p>Available Seats: <?php echo $flight['stock']; ?></p>
                         
-                        <form action="book.php" method="POST">
-                            <label for="quantity-<?php echo $flight['fligtId']; ?>">Number of Travelers:</label>
-                            <input type="number" id="quantity-<?php echo $flight['fligtId']; ?>" name="quantity" min="1" max="<?php echo $flight['stock']; ?>" value="1" required>
-                            <input type="hidden" name="flight_id" value="<?php echo $flight['fligtId']; ?>">
-                            <button type="submit">Book Now</button>
-                        </form>
+                        <?php if (isset($_SESSION['userId'])): ?>
+                            <!-- Show Book Now button if logged in -->
+                            <form action="booking.php" method="GET">
+                                <input type="hidden" name="flight_id" value="<?php echo $flight['fligtId']; ?>">
+                                <input type="hidden" name="number_of_tickets" value="<?php echo $travelers; ?>">
+                                <input type="hidden" name="user_id" value="<?php echo $_SESSION['userId']; ?>">
+                                <button type="submit">Book Now</button>
+                            </form>
+                        <?php else: ?>
+                            <!-- Show Login Required message -->
+                            <p><a href="sign.php" style="color: blue;">Log in</a> to book this flight.</p>
+                        <?php endif; ?>
                     </div>
                 <?php endwhile;
             elseif ($ticketType === "two-way"): ?>

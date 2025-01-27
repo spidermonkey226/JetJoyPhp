@@ -6,9 +6,10 @@ include 'db_connection.php';
 if ($_SERVER["REQUEST_METHOD"] == "GET" && isset($_GET['flight_id'], $_GET['number_of_tickets'])) {
     $flightId = (int) $_GET['flight_id'];
     $numberOfTickets = (int) $_GET['number_of_tickets'];
+    $userId = $_SESSION['userId']; // Get userId from session
 
     $conn = OpenCon();
-
+    
     // Fetch flight details
     $flightQuery = "SELECT * FROM flights WHERE fligtId = $flightId";
     $flightResult = mysqli_query($conn, $flightQuery);
@@ -27,6 +28,7 @@ if ($_SERVER["REQUEST_METHOD"] == "GET" && isset($_GET['flight_id'], $_GET['numb
     <form action="process_booking.php" method="POST">
         <input type="hidden" name="flight_id" value="<?php echo $flightId; ?>">
         <input type="hidden" name="number_of_tickets" value="<?php echo $numberOfTickets; ?>">
+        <input type="hidden" name="user_id" value="<?php echo $userId; ?>">
 
         <?php for ($i = 1; $i <= $numberOfTickets; $i++): ?>
             <h3>Passenger <?php echo $i; ?></h3>

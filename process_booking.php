@@ -1,15 +1,17 @@
 <?php
 include 'db_connection.php';
 
-if ($_SERVER["REQUEST_METHOD"] == "POST" && isset($_POST['flight_id'], $_POST['number_of_tickets'], $_POST['first_name'], $_POST['last_name'], $_POST['passport_number'], $_POST['dob'])) {
+if ($_SERVER["REQUEST_METHOD"] == "POST" && isset($_POST['flight_id'], $_POST['number_of_tickets'], $_POST['first_name'], $_POST['last_name'], $_POST['passport_number'], $_POST['dob'], $_POST['user_id'])) {
     $conn = OpenCon();
 
     $flightId = (int) $_POST['flight_id'];
     $numberOfTickets = (int) $_POST['number_of_tickets'];
+    $userId = (int) $_POST['user_id'];
     $firstNames = $_POST['first_name'];
     $lastNames = $_POST['last_name'];
     $passportNumbers = $_POST['passport_number'];
     $dobs = $_POST['dob'];
+    $bookingDateTime = date("Y-m-d H:i:s");
 
     // Validate flight and stock availability
     $flightQuery = "SELECT * FROM flights WHERE fligtId = $flightId";
@@ -17,7 +19,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST" && isset($_POST['flight_id'], $_POST['n
     $flight = mysqli_fetch_assoc($flightResult);
 
     if (!$flight || $flight['stock'] < $numberOfTickets) {
-        echo "<p>Not enough tickets available.</p>";
+        echo "<p>Not enough tickets available for this flight.</p>";
         exit;
     }
 
@@ -25,24 +27,16 @@ if ($_SERVER["REQUEST_METHOD"] == "POST" && isset($_POST['flight_id'], $_POST['n
     mysqli_begin_transaction($conn);
 
     try {
-        // Insert booking details
-        $bookingDateTime = date("Y-m-d H:i:s");
-        $bookingQuery = "INSERT INTO bookings (userId, flightId, numberOfTickets, bookingDateTime) 
-                         VALUES (1, $flightId, $numberOfTickets, '$bookingDateTime')";
-        mysqli_query($conn, $bookingQuery);
+        // Insert booking details for each passenger
+        for ($i = 0; $i < $numberOfTickets; $i++) {
+            $firstName = mysqli_real_escape_string($conn, $firstNames[$i]);
+            $lastName = mysqli_real_escape_string($conn, $lastNames[$i]);
+            $passportNumber = mysqli_real_escape_string($conn, $passportNumbers[$i]);
+            $dob = mysqli_real_escape_string($conn, $dobs[$i]);
 
-        // Get the inserted booking ID
-        $bookingId = mysqli_insert_id($conn);
-
-        // Insert passenger details
-        foreach ($firstNames as $index => $firstName) {
-            $lastName = mysqli_real_escape_string($conn, $lastNames[$index]);
-            $passportNumber = mysqli_real_escape_string($conn, $passportNumbers[$index]);
-            $dob = mysqli_real_escape_string($conn, $dobs[$index]);
-
-            $passengerQuery = "INSERT INTO passenger_details (bookingId, firstName, lastName, passportNumber, dateOfBirth) 
-                               VALUES ($bookingId, '$firstName', '$lastName', '$passportNumber', '$dob')";
-            mysqli_query($conn, $passengerQuery);
+            $bookingQuery = "INSERT INTO bookings (userId, firstName, lastName, PassportNumber, dateOfBD, flightId, numberOfTickets, bookingDateTime)
+                             VALUES ($userId, '$firstName', '$lastName', '$passportNumber', '$dob', $flightId, 1, '$bookingDateTime')";
+            mysqli_query($conn, $bookingQuery);
         }
 
         // Update flight stock
@@ -54,6 +48,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST" && isset($_POST['flight_id'], $_POST['n
         mysqli_commit($conn);
 
         echo "<p>Booking successful!</p>";
+        echo "<a href='flight.php'>Return to Flights</a>";
     } catch (Exception $e) {
         // Rollback transaction
         mysqli_rollback($conn);
