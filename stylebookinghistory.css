@@ -1,0 +1,61 @@
+body {
+    font-family: Arial, sans-serif;
+    background-color: #f9f9f9;
+    margin: 0;
+    padding: 0;
+    
+}
+
+.page-container {
+    padding: 20px;
+    max-width: 1200px;
+    margin: 0 auto;
+    margin-bottom: 200px;
+}
+
+h1 {
+    text-align: center;
+    color: #333;
+}
+
+.booking-list {
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+    margin-top: 20px;
+}
+
+.booking-item {
+    background-color: #fff;
+    border: 1px solid #ddd;
+    border-radius: 10px;
+    padding: 20px;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
+
+.booking-item h2 {
+    margin: 0;
+    color: #2c3e50;
+}
+
+.booking-item p {
+    margin: 0;
+    color: #555;
+    line-height: 1.5;
+}
+
+.booking-item p strong {
+    color: #333;
+}
+
+@media (min-width: 768px) {
+    .booking-list {
+        display: grid;
+        grid-template-columns: repeat(2, 1fr);
+        gap: 20px;
+    }
+}
+

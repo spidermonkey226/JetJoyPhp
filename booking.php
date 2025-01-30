@@ -3,14 +3,20 @@ include 'header.php';
 include 'navbar.php';
 include 'db_connection.php';
 
-if ($_SERVER["REQUEST_METHOD"] == "GET" && isset($_GET['flight_id'], $_GET['number_of_tickets'])) {
+if ($_SERVER["REQUEST_METHOD"] === "GET" && isset($_GET['flight_id'], $_GET['number_of_tickets'], $_GET['ticket_type'])) {
     $flightId = (int) $_GET['flight_id'];
     $numberOfTickets = (int) $_GET['number_of_tickets'];
-    $userId = $_SESSION['userId']; // Get userId from session
+    $ticketType = $_GET['ticket_type'];
+    $userId = $_SESSION['userId'] ?? null;
+
+    if (!$userId) {
+        echo "<p style='color: red;'>You must log in to book a flight. <a href='sign.php'>Log in here</a></p>";
+        exit;
+    }
 
     $conn = OpenCon();
-    
-    // Fetch flight details
+
+    // Fetch outbound flight details
     $flightQuery = "SELECT * FROM flights WHERE fligtId = $flightId";
     $flightResult = mysqli_query($conn, $flightQuery);
     $flight = mysqli_fetch_assoc($flightResult);
@@ -19,16 +25,34 @@ if ($_SERVER["REQUEST_METHOD"] == "GET" && isset($_GET['flight_id'], $_GET['numb
         echo "<p>Invalid flight ID.</p>";
         exit;
     }
+
+    // For two-way tickets, fetch the return flight details
+    $returnFlight = null;
+    if ($ticketType === "two-way" && isset($_GET['return_flight_id'])) {
+        $returnFlightId = (int) $_GET['return_flight_id'];
+        $returnFlightQuery = "SELECT * FROM flights WHERE fligtId = $returnFlightId";
+        $returnFlightResult = mysqli_query($conn, $returnFlightQuery);
+        $returnFlight = mysqli_fetch_assoc($returnFlightResult);
+
+        if (!$returnFlight) {
+            echo "<p>Invalid return flight ID.</p>";
+            exit;
+        }
+    }
 }
 ?>
 
 <div class="booking-form">
-<link rel="stylesheet" href="stylebooking.css">
+    <link rel="stylesheet" href="stylebooking.css">
     <h2>Enter Passenger Details</h2>
     <form action="process_booking.php" method="POST">
         <input type="hidden" name="flight_id" value="<?php echo $flightId; ?>">
         <input type="hidden" name="number_of_tickets" value="<?php echo $numberOfTickets; ?>">
+        <input type="hidden" name="ticket_type" value="<?php echo htmlspecialchars($ticketType); ?>">
         <input type="hidden" name="user_id" value="<?php echo $userId; ?>">
+        <?php if ($ticketType === "two-way"): ?>
+            <input type="hidden" name="return_flight_id" value="<?php echo $returnFlight['fligtId']; ?>">
+        <?php endif; ?>
 
         <?php for ($i = 1; $i <= $numberOfTickets; $i++): ?>
             <h3>Passenger <?php echo $i; ?></h3>
@@ -49,6 +73,4 @@ if ($_SERVER["REQUEST_METHOD"] == "GET" && isset($_GET['flight_id'], $_GET['numb
     </form>
 </div>
 
-<?php
-include 'footer.php';
-?>
+<?php include 'footer.php'; ?>

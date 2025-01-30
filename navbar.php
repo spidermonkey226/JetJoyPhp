@@ -30,6 +30,7 @@ $role = $_SESSION['role'] ?? 'guest'; // 'guest' for visitors
             <li><a href="hotels.php"> Hotels</a></li>
             <li><a href="ourdeals.php">Our Deals</a></li>
             <li><a href="car.php"><i class="bi bi-car-front"></i> Car Rent</a></li>
+            <li><a href="bookinghistory.php">booking history</a></li>
         <?php endif; ?>
     </ul>
 </nav>
