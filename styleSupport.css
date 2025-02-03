@@ -8,11 +8,12 @@ body {
 
 /* Table Styling */
 table {
-    width: 90%;
+    width: 90%; 
     margin: 20px auto;
     border-collapse: collapse;
     background-color: #ffffff;
     box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+    margin-bottom: 1000px ;
 }
 
 table th, table td {
@@ -78,6 +79,10 @@ table td .action-form button:hover {
     background-color: #45a049;
 }
 
+.message-text {
+    white-space: pre-line;
+}
+
 /* Adjustments for Narrow Screens */
 @media (max-width: 768px) {
     table, .form-container {
@@ -88,6 +93,7 @@ table td .action-form button:hover {
         font-size: 14px;
         padding: 8px;
     }
+
 
     table td .action-form {
         flex-wrap: wrap;
