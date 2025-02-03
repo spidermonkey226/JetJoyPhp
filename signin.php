@@ -60,6 +60,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         $_SESSION['role'] = $user['Host'] ? 'admin' : 'guest'; 
         $_SESSION['userId'] = $user['id']; // Store user ID
         $_SESSION['userName'] = $user['fname']; // Optionally store user first name
+        $_SESSION['email'] = $user['email'];
     
         // Redirect based on existing behavior
         header("Location: toursss.php");
