@@ -1,5 +1,6 @@
 <?php include 'header.php'; ?>
 <?php include 'navbar.php'; ?>
+
 <?php
 // Database Connection
 $con = new mysqli("localhost", "root", "1234", "jetjoyuser");
@@ -8,73 +9,65 @@ if ($con->connect_error) {
     die("Connection failed: " . $con->connect_error);
 }
 
-// Handle Support Answer Update
-if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['updateReport'])) {
-    $reportID = intval($_POST['report-id']);
-    $supportAnswer = $con->real_escape_string($_POST['support-answer']);
-    $status = $con->real_escape_string($_POST['status']);
+// Retrieve report ID and user email
+$report_id = isset($_GET['report_id']) ? intval($_GET['report_id']) : 0;
+$user_email = isset($_GET['user_email']) ? $con->real_escape_string($_GET['user_email']) : '';
 
-    // Update Report
-    $stmt = $con->prepare("UPDATE ticket SET supportAnswer = ?, status = ? WHERE id = ?");
-    $stmt->bind_param("ssi", $supportAnswer, $status, $reportID);
+if ($report_id == 0 || empty($user_email)) {
+    die("Invalid report ID or user email.");
+}
+
+// Fetch chat history
+$result = $con->query("SELECT * FROM ticket WHERE reportId = $report_id ORDER BY id ASC LIMIT 1");
+$row = $result->fetch_assoc();
+
+// Display chat messages
+echo "<h2>Chat for Report ID: $report_id</h2>";
+echo "<div class='chat-box'>";
+
+$feedback_messages = explode("\n", $row['feedback'] ?? '');
+$support_messages = explode("\n", $row['supportAnswer'] ?? '');
+
+foreach ($feedback_messages as $message) {
+    if (!empty(trim($message))) {
+        echo "<div class='user-message'><strong>User:</strong> " . htmlspecialchars($message) . "</div>";
+    }
+}
+
+foreach ($support_messages as $message) {
+    if (!empty(trim($message))) {
+        echo "<div class='admin-message'><strong>Admin:</strong> " . htmlspecialchars($message) . "</div>";
+    }
+}
+
+echo "</div>";
+
+// Handle new message submission
+if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['message'])) {
+    $message = $con->real_escape_string($_POST['message']);
+    $sender = $_POST['sender']; // 'user' or 'admin'
+
+    if ($sender === 'user') {
+        $stmt = $con->prepare("UPDATE ticket SET feedback = CONCAT(IFNULL(feedback, ''), '\n', ?) WHERE reportId = ?");
+        $stmt->bind_param("si", $message, $report_id);
+    } else {
+        $stmt = $con->prepare("UPDATE ticket SET supportAnswer = CONCAT(IFNULL(supportAnswer, ''), '\n', ?) WHERE reportId = ?");
+        $stmt->bind_param("si", $message, $report_id);
+    }
 
     if ($stmt->execute()) {
-        echo "<p>Report ID {$reportID} updated successfully.</p>";
+        header("Location: chat.php?report_id=$report_id&user_email=$user_email");
+        exit();
     } else {
-        echo "<p>Error updating report ID {$reportID}: " . $stmt->error . "</p>";
+        echo "<p>Error saving message: " . $stmt->error . "</p>";
     }
-
-    $stmt->close();
 }
-
-// Display Feedback Reports
-$result = $con->query("SELECT id, fname, lname, phone, email, feedback, supportAnswer, status FROM ticket");
-
-if ($result->num_rows > 0) {
-    echo "<table border='1'>
-    <tr>
-        <th>ID</th>
-        <th>Firstname</th>
-        <th>Lastname</th>
-        <th>Phone</th>
-        <th>Email</th>
-        <th>Feedback</th>
-        <th>Support Answer</th>
-        <th>Status</th>
-        <th>Action</th>
-    </tr>";
-    while ($row = $result->fetch_assoc()) {
-        echo "<tr>
-            <td>" . htmlspecialchars($row['id']) . "</td>
-            <td>" . htmlspecialchars($row['fname']) . "</td>
-            <td>" . htmlspecialchars($row['lname']) . "</td>
-            <td>" . htmlspecialchars($row['phone']) . "</td>
-            <td>" . htmlspecialchars($row['email']) . "</td>
-            <td>" . htmlspecialchars($row['feedback']) . "</td>
-            <td>" . htmlspecialchars($row['supportAnswer']) . "</td>
-            <td>" . htmlspecialchars($row['status']) . "</td>
-            <td>
-                <form method='POST' action='' class='action-form'>
-                    <input type='hidden' name='report-id' value='" . htmlspecialchars($row['id']) . "'>
-                    <input type='text' name='support-answer' placeholder='Write Answer' value='" . htmlspecialchars($row['supportAnswer']) . "' required>
-                    <select name='status' required>
-                        <option value='' disabled>Select Status</option>
-                        <option value='Pending'" . ($row['status'] === 'Pending' ? ' selected' : '') . ">Pending</option>
-                        <option value='Resolved'" . ($row['status'] === 'Resolved' ? ' selected' : '') . ">Resolved</option>
-                        <option value='Closed'" . ($row['status'] === 'Closed' ? ' selected' : '') . ">Closed</option>
-                    </select>
-                    <button type='submit' name='updateReport'>Submit</button>
-                </form>
-            </td>
-        </tr>";
-    }
-    echo "</table>";
-} else {
-    echo "No reports found.";
-}
-
-$con->close();
 ?>
-<link rel="stylesheet" href="styleSupport.css">
+
+<form method="POST" action="">
+    <input type="hidden" name="sender" value="admin">
+    <textarea name="message" required placeholder="Type your message here..."></textarea>
+    <button type="submit">Send</button>
+</form>
 
 <?php include 'footer.php'; ?>

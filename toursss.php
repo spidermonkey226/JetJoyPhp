@@ -2,6 +2,7 @@
 <?php include 'navbar.php'; ?>
 
 <link rel="stylesheet" href="styletoursss.css">
+<body>
 <div class="home-container">
     <div class="hero-section">
         <h1>Welcome to Luxury Holiday Packages</h1>
@@ -22,5 +23,5 @@
         </div>
     </div>
 </div>
-
+</body>
 <?php include 'footer.php'; ?>

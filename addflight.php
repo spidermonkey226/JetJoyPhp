@@ -54,12 +54,27 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['submitEdit'])) {
 <div class="page-container">
     <div class="content-wrap">
           <!-- Search Section -->
-          <div class="search-section" id="search-flight">
+        <div class="search-section" id="search-flight">
             <form method="GET" action="addflight.php">
-                <input type="text" name="search" placeholder="Search by Name or Address" value="<?php echo isset($_GET['search']) ? htmlspecialchars($_GET['search']) : ''; ?>">
+                <label for="flight-search">Search by Flight Name:</label>
+                <select name="search" id="flight-search">
+                    <option value="">Select a Flight</option>
+                    <?php 
+                    $conn = OpenCon();
+                    $query = "SELECT DISTINCT flghtName FROM flights";
+                    $result = mysqli_query($conn, $query);
+                    while ($row = mysqli_fetch_assoc($result)): ?>
+                        <option value="<?php echo htmlspecialchars($row['flghtName']); ?>" 
+                            <?php if (isset($_GET['search']) && $_GET['search'] === $row['flghtName']) echo 'selected'; ?>>
+                            <?php echo htmlspecialchars($row['flghtName']); ?>
+                        </option>
+                    <?php endwhile; 
+                    CloseCon($conn); ?>
+                </select>
                 <button type="submit">Search</button>
             </form>
         </div>
+
          <!-- Jump to Add Flight Section -->
          <div class="jump-to-add">
             <a href="#add-flight">Go to Add Flight</a>
@@ -71,11 +86,11 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['submitEdit'])) {
             <?php 
             $conn = OpenCon();
             $whereClause = "";
-            // Handle search functionality
             if (isset($_GET['search']) && !empty($_GET['search'])) {
                 $search = mysqli_real_escape_string($conn, $_GET['search']);
-                $whereClause = "WHERE flghtName LIKE '%$search%' OR DepartureDes LIKE '%$search%' OR LandingDes LIKE '%$search%'";
+                $whereClause = "WHERE flghtName = '$search'"; // Search by exact flight name
             }
+
             $query = "SELECT * FROM flights $whereClause";
             $result = mysqli_query($conn, $query);
             if (mysqli_num_rows($result) > 0):

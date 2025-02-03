@@ -44,18 +44,21 @@ $result = $stmt->get_result();
             <h1>Your Booking History</h1>
 
             <?php if ($result->num_rows > 0): ?>
-                <div class="booking-list">
-                    <?php while ($row = $result->fetch_assoc()): ?>
-                        <div class="booking-item">
-                            <h2>Flight: <?php echo htmlspecialchars($row['flghtName']); ?></h2>
-                            <p><strong>From:</strong> <?php echo htmlspecialchars($row['DepartureDes']); ?></p>
-                            <p><strong>To:</strong> <?php echo htmlspecialchars($row['LandingDes']); ?></p>
-                            <p><strong>Date:</strong> <?php echo htmlspecialchars($row['Flightdate']); ?></p>
-                            <p><strong>Booking Time:</strong> <?php echo htmlspecialchars($row['bookingDateTime']); ?></p>
-                            <p><strong>Passengers:</strong> <?php echo htmlspecialchars($row['passengerNames']); ?></p>
-                            <p><strong>Number of Tickets:</strong> <?php echo htmlspecialchars($row['numberOfTickets']); ?></p>
-                        </div>
-                    <?php endwhile; ?>
+                <?php while ($row = $result->fetch_assoc()): ?>
+                    <div class="booking-item">
+                        <h2>Flight: <?php echo htmlspecialchars($row['flghtName']); ?></h2>
+                        <p><strong>From:</strong> <?php echo htmlspecialchars($row['DepartureDes']); ?></p>
+                        <p><strong>To:</strong> <?php echo htmlspecialchars($row['LandingDes']); ?></p>
+                        <p><strong>Date:</strong> <?php echo htmlspecialchars($row['Flightdate']); ?></p>
+                        <p><strong>Booking Time:</strong> <?php echo htmlspecialchars($row['bookingDateTime']); ?></p>
+                        <p><strong>Passengers:</strong> <?php echo htmlspecialchars($row['passengerNames']); ?></p>
+                        <p><strong>Number of Tickets:</strong> <?php echo htmlspecialchars($row['numberOfTickets']); ?></p>
+                        
+                        <a href="generate_pdf.php?booking_id=<?php echo $row['flightId']; ?>" target="_blank">
+                            <button>Download PDF</button>
+                        </a>
+                    </div>
+                <?php endwhile; ?>
                 </div>
             <?php else: ?>
                 <p>You have no bookings yet.</p>

@@ -55,7 +55,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     if ($password === $user['password']) {
         // Reset attempts on successful login
         mysqli_query($conn, "UPDATE user SET attempts = 0, locked = 0, locktime = 0 WHERE email = '$email'");
-
+        mysqli_query($conn, "INSERT INTO login_attempts (user_id, email, success) VALUES ('{$user['id']}', '$email', 1)");
         $_SESSION['user_name'] = $user['fname'];
         $_SESSION['role'] = $user['Host'] ? 'admin' : 'guest'; 
         $_SESSION['userId'] = $user['id']; // Store user ID
@@ -108,6 +108,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     } else {
         // Increment attempts and lock the account if necessary
         $new_attempts = $user['attempts'] + 1;
+        mysqli_query($conn, "INSERT INTO login_attempts (user_id, email, success) VALUES ('{$user['id']}', '$email', 0)");
+
         if ($new_attempts >= 3) {
             mysqli_query($conn, "UPDATE user SET attempts = $new_attempts, locked = 1, locktime = " . time() . " WHERE email = '$email'");
             $_SESSION['error_sign'] = "Incorrect password. Your account is now locked for 1 minute.";

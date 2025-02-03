@@ -22,6 +22,7 @@ $role = $_SESSION['role'] ?? 'guest'; // 'guest' for visitors
             <li><a href="car.php"><i class="bi bi-car-front"></i> Car Rent</a></li>
             <li><a href="connectWithShow.php">Manage Users</a></li>
             <li><a href="supportReports.php">Reports</a></li>
+            <li><a href="admin_dashboard.php">user attempt</a></li>
         <?php endif; ?>
         <?php if ($role === 'guest'): ?>
             <li><a href="about.php">About</a></li>
