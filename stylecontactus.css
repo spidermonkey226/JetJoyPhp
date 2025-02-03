@@ -1,84 +1,141 @@
+/* General Page Styling */
 body {
-    background-color: white;
-    align-items: center;
-    align-self: center;
-   
+    font-family: Arial, sans-serif;
+    background-color: #f4f4f4;
+    margin: 0;
+    padding: 0;
+    text-align: center;
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
 }
 
+/* Header Styling */
 .top-bar {
-    grid-column: span 4;
-    background: black;
+    background-color: #536a8364;
+    color: white;
+    padding: 15px;
+    font-size: 24px;
+    font-weight: bold;
 }
 
-pre {
-    font-family: David;
-    font-size: x-large;
-    color: blue;
+/* Main Content */
+.container {
+    flex: 1;
+    width: 80%;
+    margin: 0 auto;
+    padding-top: 20px;
+    padding-bottom: 100px; /* Space for footer */
 }
 
+/* Reports Table */
+.reports {
+    width: 100%;
+    margin: 20px auto;
+    background: white;
+    padding: 20px;
+    border-radius: 8px;
+    box-shadow: 0px 4px 8px rgba(0, 0, 0, 0.1);
+    overflow-x: auto;
+}
+
+.reports h2 {
+    color: #333;
+}
+
+/* Table Styling */
+table {
+    width: 100%;
+    border-collapse: collapse;
+    margin-top: 10px;
+}
+
+table, th, td {
+    border: 1px solid #ddd;
+}
+
+th {
+    background-color: #007bff;
+    color: white;
+    padding: 10px;
+}
+
+td {
+    padding: 10px;
+    text-align: center;
+}
+
+tr:nth-child(even) {
+    background-color: #f9f9f9;
+}
+
+/* Reply Section */
+textarea {
+    width: 100%;
+    padding: 8px;
+    margin-top: 5px;
+    border-radius: 5px;
+    border: 1px solid #ccc;
+    resize: none;
+}
+
+/* Buttons */
+button {
+    background-color: #28a745;
+    color: white;
+    border: none;
+    padding: 8px 15px;
+    border-radius: 5px;
+    cursor: pointer;
+    margin-top: 5px;
+    font-size: 14px;
+}
+
+button:hover {
+    background-color: #218838;
+}
+
+/* Open New Ticket Form */
 h1 {
-    color: white;
-    text-align: center;
-    font-family: David;
-    font-size: xxx-large;
+    margin-top: 30px;
+    color: #333;
 }
 
-.product-grid {
-    display: grid;
-    grid-template-columns: repeat(4, 1fr);
-    gap: 20px;
-    align-items: center;
-    align-self: center;
-}
-.contener{
-    background-image: url('italy.jpg');
-    background-size: cover;
-    background-attachment: fixed;
-    background-position: center;
-    background-repeat: no-repeat;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    flex-direction: column;
+.frd {
+    width: 50%;
+    margin: 20px auto;
+    background: white;
+    padding: 20px;
+    border-radius: 8px;
+    box-shadow: 0px 4px 8px rgba(0, 0, 0, 0.1);
+    text-align: left;
 }
 
-.fr{
-    background-color: #333;
-    border-radius: 30px;
-    box-shadow: 0 5px 15px rgba(0, 0, 0, 0.35);
-    position: relative;
-    overflow: hidden;
-    width: 800px;
-    max-width: 100%;
-    min-height: 600px;
-    margin-top: 35px;
-    
- 
+.frd input, 
+.frd textarea {
+    width: 100%;
+    padding: 10px;
+    margin: 5px 0;
+    border: 1px solid #ccc;
+    border-radius: 5px;
 }
 
-.frd{
-    background-color: #333;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    flex-direction: column;
-    padding: 0 40px;
-    height: 100%;
-    text-align: center;
+.frd button {
+    width: 100%;
+    background-color: #007bff;
 }
 
-p {
-    font-family: David;
-    font-size: 20px;
-    color: white;
+.frd button:hover {
+    background-color: #0056b3;
 }
 
-.error-message{
-    color: white;
+/* Fix Footer Overlap */
+.container::after {
+    content: "";
+    display: block;
+    height: 80px; /* Equal to footer height */
 }
 
-.input .placeholder{
-    text-align: center;
-    align-items: center;
+.message-text {
+    white-space: pre-line;
 }
-
