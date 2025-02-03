@@ -9,65 +9,105 @@ if ($con->connect_error) {
     die("Connection failed: " . $con->connect_error);
 }
 
-// Retrieve report ID and user email
-$report_id = isset($_GET['report_id']) ? intval($_GET['report_id']) : 0;
-$user_email = isset($_GET['user_email']) ? $con->real_escape_string($_GET['user_email']) : '';
+// Handle Support Answer Update (Appending Replies)
+if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['updateReport'])) {
+    $reportID = intval($_POST['report-id']);
+    $newSupportMessage = $con->real_escape_string($_POST['support-answer']);
+    $status = $con->real_escape_string($_POST['status']);
 
-if ($report_id == 0 || empty($user_email)) {
-    die("Invalid report ID or user email.");
-}
+    // Fetch the current conversation
+    $query = "SELECT supportAnswer FROM ticket WHERE id = ?";
+    $stmt = $con->prepare($query);
+    $stmt->bind_param("i", $reportID);
+    $stmt->execute();
+    $stmt->bind_result($currentSupportConversation);
+    $stmt->fetch();
+    $stmt->close();
 
-// Fetch chat history
-$result = $con->query("SELECT * FROM ticket WHERE reportId = $report_id ORDER BY id ASC LIMIT 1");
-$row = $result->fetch_assoc();
+    // Append new message to existing conversation
+    $updatedConversation = trim($currentSupportConversation . "\nSupport: " . $newSupportMessage);
 
-// Display chat messages
-echo "<h2>Chat for Report ID: $report_id</h2>";
-echo "<div class='chat-box'>";
-
-$feedback_messages = explode("\n", $row['feedback'] ?? '');
-$support_messages = explode("\n", $row['supportAnswer'] ?? '');
-
-foreach ($feedback_messages as $message) {
-    if (!empty(trim($message))) {
-        echo "<div class='user-message'><strong>User:</strong> " . htmlspecialchars($message) . "</div>";
-    }
-}
-
-foreach ($support_messages as $message) {
-    if (!empty(trim($message))) {
-        echo "<div class='admin-message'><strong>Admin:</strong> " . htmlspecialchars($message) . "</div>";
-    }
-}
-
-echo "</div>";
-
-// Handle new message submission
-if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['message'])) {
-    $message = $con->real_escape_string($_POST['message']);
-    $sender = $_POST['sender']; // 'user' or 'admin'
-
-    if ($sender === 'user') {
-        $stmt = $con->prepare("UPDATE ticket SET feedback = CONCAT(IFNULL(feedback, ''), '\n', ?) WHERE reportId = ?");
-        $stmt->bind_param("si", $message, $report_id);
-    } else {
-        $stmt = $con->prepare("UPDATE ticket SET supportAnswer = CONCAT(IFNULL(supportAnswer, ''), '\n', ?) WHERE reportId = ?");
-        $stmt->bind_param("si", $message, $report_id);
-    }
+    // Update Report (Appending the reply, not overwriting)
+    $stmt = $con->prepare("UPDATE ticket SET supportAnswer = ?, status = ? WHERE id = ?");
+    $stmt->bind_param("ssi", $updatedConversation, $status, $reportID);
 
     if ($stmt->execute()) {
-        header("Location: chat.php?report_id=$report_id&user_email=$user_email");
-        exit();
+        echo "<p>Report ID {$reportID} updated successfully.</p>";
     } else {
-        echo "<p>Error saving message: " . $stmt->error . "</p>";
+        echo "<p>Error updating report ID {$reportID}: " . $stmt->error . "</p>";
     }
+
+    $stmt->close();
 }
+
+// Display Feedback Reports
+$result = $con->query("SELECT id, fname, lname, phone, email, feedback, supportAnswer, status FROM ticket");
+
+if ($result->num_rows > 0) {
+    echo "<table border='1'>
+    <tr>
+        <th>ID</th>
+        <th>Firstname</th>
+        <th>Lastname</th>
+        <th>Phone</th>
+        <th>Email</th>
+        <th>Feedback</th>
+        <th>Conversation</th>
+        <th>Status</th>
+        <th>Action</th>
+    </tr>";
+
+    while ($row = $result->fetch_assoc()) {
+        echo "<tr>
+            <td>" . htmlspecialchars($row['id']) . "</td>
+            <td>" . htmlspecialchars($row['fname']) . "</td>
+            <td>" . htmlspecialchars($row['lname']) . "</td>
+            <td>" . htmlspecialchars($row['phone']) . "</td>
+            <td>" . htmlspecialchars($row['email']) . "</td>
+            <td>" . htmlspecialchars($row['feedback']) . "</td>
+            <td>
+                <button onclick='toggleConversation(" . $row['id'] . ")'>View Conversation</button>
+                <div id='conversation-" . $row['id'] . "' style='display: none; padding: 10px; border: 1px solid #ddd; margin-top: 10px;'>
+                    <p><strong>User:</strong> <span class='message-text'>" . htmlspecialchars($row['feedback']) . "</span></p>
+                    <p><strong>Support:</strong> <span class='message-text'>" . htmlspecialchars($row['supportAnswer']) . "</span></p>
+                </div>
+            </td>
+            <td>" . htmlspecialchars($row['status']) . "</td>
+            <td>
+                <form method='POST' action='' class='action-form'>
+                    <input type='hidden' name='report-id' value='" . htmlspecialchars($row['id']) . "'>
+                    <textarea name='support-answer' placeholder='Write Answer' required></textarea>
+                    <select name='status' required>
+                        <option value='' disabled>Select Status</option>
+                        <option value='Pending'" . ($row['status'] === 'Pending' ? ' selected' : '') . ">Pending</option>
+                        <option value='Resolved'" . ($row['status'] === 'Resolved' ? ' selected' : '') . ">Resolved</option>
+                        <option value='Closed'" . ($row['status'] === 'Closed' ? ' selected' : '') . ">Closed</option>
+                    </select>
+                    <button type='submit' name='updateReport'>Submit</button>
+                </form>
+            </td>
+        </tr>";
+    }
+
+    echo "</table>";
+} else {
+    echo "No reports found.";
+}
+
+$con->close();
 ?>
 
-<form method="POST" action="">
-    <input type="hidden" name="sender" value="admin">
-    <textarea name="message" required placeholder="Type your message here..."></textarea>
-    <button type="submit">Send</button>
-</form>
-
+<link rel="stylesheet" href="styleSupport.css">
 <?php include 'footer.php'; ?>
+
+<!-- JavaScript for Show/Hide Conversations -->
+<script>
+    function toggleConversation(ticketId) {
+        var conversationDiv = document.getElementById("conversation-" + ticketId);
+        if (conversationDiv.style.display === "none") {
+            conversationDiv.style.display = "block";
+        } else {
+            conversationDiv.style.display = "none";
+        }
+    }
+</script>
